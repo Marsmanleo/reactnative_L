@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
+  StatusBar,
 } from "react-native";
 import styled from "styled-components";
 import Card from "../components/Card";
@@ -29,7 +30,12 @@ function mapDispatchToProps(dispatch) {
 class HomeScreen extends React.Component {
   state = {
     scale: new Animated.Value(1),
+    opacity: new Animated.Value(1),
   };
+
+  componentDidMount() {
+    StatusBar.setBarStyle("dark-content,true");
+  }
 
   componentDidUpdate() {
     this.toggleMenu();
@@ -37,25 +43,52 @@ class HomeScreen extends React.Component {
 
   toggleMenu = () => {
     if (this.props.action == "openMenu") {
-      Animated.spring(this.state.scale, {
+      Animated.timing(this.state.scale, {
         toValue: 0.9,
+        duration: 300,
+        easing: Easing.in(),
       }).start();
+      Animated.spring(this.state.opacity, {
+        toValue: 0.5,
+      }).start();
+
+      StatusBar.setBarStyle("light-content", true);
     }
+
     if (this.props.action == "closeMenu") {
-      Animated.spring(this.state.scale, {
+      Animated.timing(this.state.scale, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.in(),
+      }).start();
+      Animated.spring(this.state.opacity, {
         toValue: 1,
       }).start();
+
+      StatusBar.setBarStyle("dark-content", true);
     }
   };
   render() {
     return (
       <RootView>
         <Menu />
-        <AnimatedContainer style={{ transform: [{ scale: this.state.scale }] }}>
+        <AnimatedContainer
+          style={{
+            transform: [{ scale: this.state.scale }],
+            opacity: this.state.opacity,
+          }}
+        >
           <SafeAreaView>
             <ScrollView style={{ height: "100%" }}>
               <TitleBar>
-                <TouchableOpacity onPress={this.props.openMenu}>
+                <TouchableOpacity
+                  opPress={this.props.openMenu}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 20,
+                  }}
+                >
                   <Avatar source={require("../assets/avatar.jpg")} />
                 </TouchableOpacity>
                 <Title>Welcome back,</Title>
@@ -142,6 +175,7 @@ const Avatar = styled.Image`
 const Container = styled.View`
   background: #f0f3f5;
   flex: 1;
+  border-radius: 10px;
 `;
 
 const AnimatedContainer = Animated.createAnimatedComponent(Container);
